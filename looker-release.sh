@@ -69,21 +69,28 @@ calcite.avatica.version=$NEXT_VERSION
     echo -e "\nBuilding '$NEXT_VERSION'..." >&2
     ./gradlew build && (
 
-      echo -e "\nTests passed! Setting local looker branch." >&2
-      git branch -f looker
+      export LOOKER_COMMIT="$(git rev-parse --short HEAD)"
 
       export COMMIT_MSG="Prepare for $NEXT_TAG release"
-      echo -e "\nCreating commit '$COMMIT_MSG'." >&2
+      echo -e "\nTests passed! Creating commit '$COMMIT_MSG'." >&2
       git add gradle.properties && git commit -m "$COMMIT_MSG" && (
 
         echo -e "\nCreating new tag '$NEXT_TAG'." >&2
         git tag -f "$NEXT_TAG"
 
-        echo -e "\nTake a look around.\nIf everything looks good, you can publish to Nexus with this command:\n" >&2
+        echo -e "\nTake a look around." >&2
+        echo -e "You should see (starting from the most recent tip of your history):" >&2
+        echo -e "- A tagged release commit, which just updates the version and nothing else." >&2
+        echo -e "  There should be only 1 such commit in the whole history." >&2
+        echo -e "- The latest fixup commit (business logic that is not upstreamed)." >&2
+        echo -e "  This becomes the new tip of the looker branch." >&2
+        echo -e "- Prior fixups, if any..." >&2
+        echo -e "- All commits from upstream..." >&2
+        echo -e "\nIf everything looks good, you can publish to Nexus with this command:\n" >&2
         echo -e "    ./gradlew -Prelease -PskipSign publishAllPublicationsToLookerNexusRepository\n" >&2
         echo -e "And you can push the release tag and force-push the looker branch to looker-open-source with these commands:\n" >&2
         echo -e "    git push git@github.com:looker-open-source/calcite-avatica.git $NEXT_TAG"
-        echo -e "    git push -f git@github.com:looker-open-source/calcite-avatica.git looker"
+        echo -e "    git push -f git@github.com:looker-open-source/calcite-avatica.git $LOOKER_COMMIT:looker"
       )
     )
   )
